@@ -6,9 +6,9 @@ def on_publish(client, userdata, mid):
     print("sent a message")
 
 
-mqttClient = mqtt.Client("aritra_brocker_test")
+mqttClient = mqtt.Client("aritra_brocker_test_publisher")
 mqttClient.on_publish = on_publish
-mqttClient.connect('broker.hivemq.com', 1883)
+mqttClient.connect('172.16.210.5', 8883)
 # start a new thread
 mqttClient.loop_start()
 
