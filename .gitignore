@@ -1,0 +1,5 @@
+venv/
+venv_app/
+.idea
+__pycache__/
+mongodb_data_container/
