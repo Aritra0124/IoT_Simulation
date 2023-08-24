@@ -1,40 +1,33 @@
-from paho.mqtt import client as mqtt_client
-import db_save
+import paho.mqtt.client as mqtt_client
 import json
+import db_save
 
 broker = '172.16.210.5'
-port = 8883
+port = 1883
 topic = "python/test"
 
 def connect_mqtt() -> mqtt_client:
     def on_connect(client, userdata, flags, rc):
         if rc == 0:
             print("Connected to MQTT Broker!")
+            client.subscribe(topic)  # Subscribe to the topic upon successful connection
         else:
-            print("Failed to connect, return code %d\n", rc)
+            print("Failed to connect, return code", rc)
 
-    client = mqtt_client.Client("aritra_brocker_test_sub")
-    # client.username_pw_set(username, password)
+    client = mqtt_client.Client("aritra_broker_test_subscriber")
     client.on_connect = on_connect
     client.connect(broker, port)
     return client
 
-
-def subscribe(client: mqtt_client):
-    def on_message(client, userdata, msg):
-        data = msg.payload.decode()
-        print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")
-        # db_save.save_data(json.load(data))
-
-    client.subscribe(topic)
-    client.on_message = on_message
-
-
+def on_message(client, userdata, msg):
+    payload = msg.payload.decode()  # Convert payload to a string
+    data = json.loads(payload)  # Parse the JSON payload
+    print(f"Received data: {data}")
+    db_save.save_data(data)
 def run():
     client = connect_mqtt()
-    subscribe(client)
+    client.on_message = on_message  # Assign on_message callback
     client.loop_forever()
-
 
 if __name__ == '__main__':
     run()

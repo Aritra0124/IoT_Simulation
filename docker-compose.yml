@@ -32,7 +32,7 @@ services:
     volumes:
       - ./mosquitto/config:/mosquitto/config/
     ports:
-      - '8888:8883'
+      - '8888:1883'
     networks:
       iot-network:
           ipv4_address: 172.16.210.5
@@ -77,7 +77,7 @@ services:
     ports:
       - 27017:27017
     volumes:
-      - mongodb_data_container:/data/db
+      - ./mongodb_data_container:/data/db
     networks:
       - iot-network
     healthcheck:

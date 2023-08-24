@@ -9,5 +9,6 @@ COPY docker/python_publisher/requirements.txt /requirements.txt
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-
+CMD ["echo", "publisher"]
+CMD ["pwd"]
 CMD ["python", "mqtt_publisher.py"]

@@ -1,32 +1,33 @@
-import time
+from datetime import datetime
 import paho.mqtt.client as mqtt
+import json, time
+
+import random
 
 
 def on_publish(client, userdata, mid):
-    print("sent a message")
+    print("Sent a message")
 
-
-mqttClient = mqtt.Client("aritra_brocker_test_publisher")
+mqttClient = mqtt.Client("aritra_broker_test_publisher")
 mqttClient.on_publish = on_publish
-mqttClient.connect('172.16.210.5', 8883)
-# start a new thread
+mqttClient.connect('172.16.210.5', 1883)
 mqttClient.loop_start()
 
-# Why use msg.encode('utf-8') here
-# MQTT is a binary based protocol where the control elements are binary bytes and not text strings.
-# Topic names, Client ID, Usernames and Passwords are encoded as stream of bytes using UTF-8.
 while True:
-    msg = str({
-        "sensor_id":1,
-        "data": 1234
-    })
+    sensor_id = random.randint(1, 10)
+    data = random.randint(1000, 9999)
+    current_datetime = datetime.now()
+    data = {
+        "sensor_id": sensor_id,
+        "data": data,
+        "time": current_datetime.isoformat()
+    }
+    msg = json.dumps(data)  # Convert data dictionary to JSON string
     info = mqttClient.publish(
         topic='python/test',
-        payload=msg.encode('utf-8'),
+        payload=msg,  # No need to encode as 'utf-8' since it's already a JSON string
         qos=0,
     )
-    # Because published() is not synchronous,
-    # it returns false while he is not aware of delivery that's why calling wait_for_publish() is mandatory.
     info.wait_for_publish()
-    print(info.is_published())
+    print(f"Published: {msg}")
     time.sleep(3)
