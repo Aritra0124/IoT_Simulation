@@ -1,33 +1,51 @@
 import paho.mqtt.client as mqtt_client
-import json
 import db_save
+import json
+import redis
 
+# MQTT broker configuration
 broker = '172.16.210.5'
 port = 1883
 topic = "python/test"
 
-def connect_mqtt() -> mqtt_client:
-    def on_connect(client, userdata, flags, rc):
-        if rc == 0:
-            print("Connected to MQTT Broker!")
-            client.subscribe(topic)  # Subscribe to the topic upon successful connection
-        else:
-            print("Failed to connect, return code", rc)
+# Redis configuration
+redis_host = 'redis_db'
+redis_port = 6379
+redis_db = 0
+redis_client = redis.StrictRedis(host=redis_host, port=redis_port, db=redis_db)
 
-    client = mqtt_client.Client("aritra_broker_test_subscriber")
-    client.on_connect = on_connect
+
+latest_data = []
+
+
+def connect_mqtt() -> mqtt_client:
+    client = mqtt_client.Client("mqtt_subscriber")
     client.connect(broker, port)
     return client
 
+
 def on_message(client, userdata, msg):
-    payload = msg.payload.decode()  # Convert payload to a string
-    data = json.loads(payload)  # Parse the JSON payload
-    print(f"Received data: {data}")
-    db_save.save_data(data)
+    global latest_data
+
+    payload = msg.payload.decode()
+    data = json.loads(payload)
+
+    latest_data.append(data)
+    if len(latest_data) > 10:
+        oldest_data = latest_data.pop(0)
+        redis_client.lpush("latest_data_list", json.dumps(oldest_data))
+
+        # Insert the oldest data into MongoDB
+        db_save.save_data(oldest_data)
+    print("Received data:", data)
+
+
 def run():
     client = connect_mqtt()
-    client.on_message = on_message  # Assign on_message callback
+    client.on_message = on_message
+    client.subscribe(topic)
     client.loop_forever()
+
 
 if __name__ == '__main__':
     run()
