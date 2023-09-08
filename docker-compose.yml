@@ -18,6 +18,8 @@ services:
       dockerfile: docker/python_subscriber/Dockerfile
     volumes:
       - ./python_subscriber:/var/www/python_subscriber
+    env_file:
+      - .env
     working_dir: /var/www/python_subscriber
     networks:
       - iot-network
@@ -44,6 +46,8 @@ services:
       dockerfile: docker/python_app/Dockerfile
     volumes:
       - ./python_app:/var/www/python_app
+    env_file:
+      - .env
     working_dir: /var/www/python_app
     command: /entrypoint.sh
     ports:
@@ -69,11 +73,11 @@ services:
     restart: unless-stopped
     tty: true
     environment:
-      MONGO_INITDB_DATABASE: test
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
     ports:
-      - 27017:27017
+      - '27017:27017'
     volumes:
       - ./mongodb_data_container:/data/db
     networks:

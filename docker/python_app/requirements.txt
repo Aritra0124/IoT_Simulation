@@ -1,3 +1,4 @@
 pymongo
 fastapi
+python-environ
 uvicorn[standard]
