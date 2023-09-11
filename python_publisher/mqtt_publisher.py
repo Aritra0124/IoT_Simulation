@@ -2,15 +2,12 @@ from datetime import datetime
 import paho.mqtt.client as mqtt_client
 import json, time
 import random
-from environ import environ
+import os
 
-
-class EnvData:
-    env = environ.Env()
-    environ.Env.read_env()
-    MOSQUITTO_BROKER_IP = env('MOSQUITTO_BROKER_IP')
-    MOSQUITTO_BROKER_PORT = int(env('MOSQUITTO_BROKER_PORT'))
-    MOSQUITTO_BROKER_TOPIC = env('MOSQUITTO_BROKER_TOPIC')
+class envData:
+    MOSQUITTO_BROKER_IP = os.getenv('MOSQUITTO_BROKER_IP')
+    MOSQUITTO_BROKER_PORT = int(os.getenv('MOSQUITTO_BROKER_PORT'))
+    MOSQUITTO_BROKER_TOPIC = os.getenv('MOSQUITTO_BROKER_TOPIC')
 
 
 def random_data():
@@ -44,22 +41,20 @@ def run():
     client = mqtt_client.Client("mqtt_publisher")
     client.on_connect = on_connect
     client.on_publish = on_publish
+    client.connect(envData.MOSQUITTO_BROKER_IP, envData.MOSQUITTO_BROKER_PORT)
+    client.loop_start()
 
     while True:
         try:
-            client.connect(EnvData.MOSQUITTO_BROKER_IP, EnvData.MOSQUITTO_BROKER_PORT)
-            client.loop_start()
-
             payload = random_data()
             info = client.publish(
-                topic=EnvData.MOSQUITTO_BROKER_TOPIC,
+                topic=envData.MOSQUITTO_BROKER_TOPIC,
                 payload=payload,
                 qos=0,
             )
             info.wait_for_publish()
             print(f"Published: {payload}")
 
-            client.disconnect()
         except Exception as e:
             print(f"An error occurred: {e}")
 

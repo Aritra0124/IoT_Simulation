@@ -2,19 +2,14 @@ import paho.mqtt.client as mqtt_client
 import db_save
 import json
 import redis
-from environ import environ
-import time
+import time, os
 
 class envData:
-    env = environ.Env()
-    environ.Env.read_env()
-    MOSQUITTO_BROKER_IP = env('MOSQUITTO_BROKER_IP')
-    MOSQUITTO_BROKER_PORT = env('MOSQUITTO_BROKER_PORT')
-    MOSQUITTO_BROKER_TOPIC = env('MOSQUITTO_BROKER_TOPIC')
+    MOSQUITTO_BROKER_IP = os.getenv('MOSQUITTO_BROKER_IP')
+    MOSQUITTO_BROKER_PORT = os.getenv('MOSQUITTO_BROKER_PORT')
+    MOSQUITTO_BROKER_TOPIC = os.getenv('MOSQUITTO_BROKER_TOPIC')
 
-redis_client = redis.StrictRedis(host='redis_db', port=6379, db=0)
-
-latest_data = []
+redis_client = redis.StrictRedis(host='redis_db', port=6379, db=0, decode_responses=True)
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
@@ -26,17 +21,15 @@ def on_connect(client, userdata, flags, rc):
         client.reconnect()
 
 def on_message(client, userdata, msg):
-    global latest_data
 
     payload = msg.payload.decode()
     try:
-        data = json.loads(payload)
-        latest_data.append(data)
-
-        if len(latest_data) > 10:
-            oldest_data = latest_data.pop(0)
-            redis_client.lpush("latest_data_list", json.dumps(oldest_data))
-
+        print(payload)
+        data = payload
+        redis_client.rpush("sensor_data", data)
+        if redis_client.llen('sensor_data') > 10:
+            oldest_data = json.loads(redis_client.lpop('sensor_data'))
+            print(oldest_data)
             # Insert the oldest data into MongoDB
             db_save.save_data(oldest_data)
         print("Received data:", data)

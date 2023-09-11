@@ -1,13 +1,10 @@
 from pymongo import MongoClient
-from environ import environ
-
+import os
 class envData:
-    env = environ.Env()
-    environ.Env.read_env()
-    MONGO_DB_NAME = env('MONGO_INITDB_DATABASE')
-    MONGO_DB_USER = env('MONGO_INITDB_ROOT_USERNAME')
-    MONGO_DB_PASSWORD = env('MONGO_INITDB_ROOT_PASSWORD')
-    MONGO_DB_COLLECTION = env('MONGO_DB_COLLECTION')
+    MONGO_DB_NAME = os.getenv('MONGO_INITDB_DATABASE')
+    MONGO_DB_USER = os.getenv('MONGO_INITDB_ROOT_USERNAME')
+    MONGO_DB_PASSWORD = os.getenv('MONGO_INITDB_ROOT_PASSWORD')
+    MONGO_DB_COLLECTION = os.getenv('MONGO_DB_COLLECTION')
 
 class DbAccess:
     def __init__(self):

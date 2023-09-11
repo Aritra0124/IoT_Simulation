@@ -7,6 +7,8 @@ services:
       dockerfile: docker/python_publisher/Dockerfile
     volumes:
       - ./python_publisher:/var/www/python_publisher
+    env_file:
+      - .env
     working_dir: /var/www/python_publisher
     networks:
       - iot-network
@@ -62,7 +64,7 @@ services:
     container_name: redis_db
     restart: always
     ports:
-      - '6379:6379'
+      - '6000:6379'
     networks:
       - iot-network
 
