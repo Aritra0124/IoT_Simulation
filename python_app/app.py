@@ -1,8 +1,5 @@
-import json
 from fastapi import FastAPI, HTTPException, Query, Request
 from pymongo import MongoClient
-from bson import json_util
-from datetime import datetime
 from pydantic import BaseModel
 import os
 class envData:
@@ -29,7 +26,7 @@ class Data_data(BaseModel):
 
 app = FastAPI()
 
-@app.get("/fetch_sensor_readings/")
+@app.get("/fetch_readings/")
 async def fetch_sensor_readings(data: Data_data):
     try:
         print("Start time:", data.start)
@@ -38,14 +35,15 @@ async def fetch_sensor_readings(data: Data_data):
         raise HTTPException(status_code=400, detail="Invalid datetime format")
 
     # Query MongoDB for data within the specified range
+    projection = {"_id": 0}
     query = {
-        "time": {"$gte": data.start, "$lte": data.end}
+        "timestamp": {"$gte": data.start, "$lte": data.end}
     }
     connection = DbAccess()
-    readings = connection.connect_database().find(query)
-    json_data = [json.dumps(reading, default=json_util.default) for reading in readings]
+    record_count = connection.connect_database().count_documents(query)
+    documents = list(connection.connect_database().find(query, projection))
     connection.close_database()
-    return json_data
+    return {"count": record_count, "records": documents}
 
 @app.get("/sensor/{sensor_id}")
 def get_last_data(sensor_id: int):
@@ -53,10 +51,9 @@ def get_last_data(sensor_id: int):
     projection = {"_id": 0}
     query = {"sensor_id": sensor_id_to_fetch}
     connection = DbAccess()
-    documents = connection.connect_database().find(query, projection).sort([("time", -1)]).limit(10)
-    json_data = [json.dumps(document, default=json_util.default) for document in documents]
+    documents = list(connection.connect_database().find(query, projection).sort([("time", -1)]).limit(10))
     connection.close_database()
-    return json_data
+    return documents
 
 @app.get("/")
 def read_root():

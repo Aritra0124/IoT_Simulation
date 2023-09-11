@@ -1,8 +1,6 @@
 import paho.mqtt.client as mqtt_client
+import json, time, os, redis
 import db_save
-import json
-import redis
-import time, os
 
 class envData:
     MOSQUITTO_BROKER_IP = os.getenv('MOSQUITTO_BROKER_IP')
@@ -24,12 +22,10 @@ def on_message(client, userdata, msg):
 
     payload = msg.payload.decode()
     try:
-        print(payload)
         data = payload
         redis_client.rpush("sensor_data", data)
         if redis_client.llen('sensor_data') > 10:
             oldest_data = json.loads(redis_client.lpop('sensor_data'))
-            print(oldest_data)
             # Insert the oldest data into MongoDB
             db_save.save_data(oldest_data)
         print("Received data:", data)

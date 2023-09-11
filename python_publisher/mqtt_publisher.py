@@ -1,8 +1,6 @@
 from datetime import datetime
 import paho.mqtt.client as mqtt_client
-import json, time
-import random
-import os
+import json, time, os, random
 
 class envData:
     MOSQUITTO_BROKER_IP = os.getenv('MOSQUITTO_BROKER_IP')
@@ -16,8 +14,8 @@ def random_data():
     current_datetime = datetime.now()
     data = {
         "sensor_id": sensor_id,
-        "data": data,
-        "time": current_datetime.isoformat()
+        "value": data,
+        "timestamp": current_datetime.isoformat()
     }
     msg = json.dumps(data)
     return msg
