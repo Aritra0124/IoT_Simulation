@@ -4,16 +4,56 @@
 
 ## Table of Contents
 - [Project Overview](#project-overview)
+  - [Key Objectives](#key-objectives)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
+  - [File Structure](#file-structure)
 - [Services Overview](#services-overview)
+  - [Python Publisher](#pythonpublisher)
+  - [Python Subscriber](#pythonsubscriber)
+  - [Mosquitto](#mosquitto)
+  - [Python App / Fast API App](#pythonapp)
+  - [RedisDB](#redisdb)
+  - [MongoDB](#mongodb)
 - [Design Choices](#design-choices)
 - [Challenges and Solutions](#challenges-and-solutions)
 
 # Project-Overview
+This project aims to simulate the behavior of sensors, monitor their readings, and provide APIs to retrieve data based on specific criteria. It offers a comprehensive solution for sensor data management and access. Whether you are working with real sensors or need to simulate their behavior for testing and development purposes, this project provides the tools and APIs to efficiently handle sensor data.
+
+## Key Objectives
+
+- **MQTT Broker Setup:** Deploy a Mosquitto MQTT broker using Docker to facilitate communication between MQTT clients, including publishers and subscribers.
+
+- **MQTT Publisher:** Create a Python MQTT client to simulate multiple sensor readings and publish them to MQTT topics such as `sensors/temperature` and `sensors/humidity`. The sensor data will be published in the following JSON format:
+
+    ```json
+    {
+      "sensor_id": "unique_sensor_id",
+      "value": "<reading_value>",
+      "timestamp": "ISO8601_formatted_date_time"
+    }
+    ```
+
+- **MQTT Subscriber:** Construct a Python MQTT subscriber to receive sensor data messages and store them in a MongoDB collection.
+
+- **Data Storage:** Initiate a MongoDB instance using Docker to serve as the primary data storage solution for the incoming MQTT messages.
+
+- **In-Memory Data Management:** Implement Redis using Docker to efficiently store and manage the latest ten sensor readings in memory.
+
+- **FastAPI Endpoint:** Design an API with the following endpoints to provide easy access to sensor data:
+
+    - Sensor Readings by Range: An endpoint that allows users to fetch sensor readings by specifying a start and end range.
+
+    - Last Ten Sensor Readings: An endpoint to retrieve the last ten sensor readings for a specific sensor, leveraging the in-memory Redis storage.
+
+- **Docker Integration:** Integrate all services, including the MQTT broker, MQTT publisher, MQTT subscriber, MongoDB, Redis, and FastAPI, using Docker Compose for seamless deployment and orchestration.
 
 # Getting-Started
-### File Structure
+To begin using this project, follow the steps below to configure the sensor simulation and monitoring environment.
+## Prerequisites
+To ensure proper functionality, it is required to use Docker Compose version 2.0 or a more recent version.
+## File Structure
 ```
 .env
 .gitignore
@@ -41,12 +81,37 @@ python_subscriber
     |-- db_save.py
     |-- mqtt_subscriber.py
 ```
-## Prerequisites
-To work it properly need to use dokcer compose version 2.0 or above.
 
+### Directory and File Descriptions
+
+- `.env`: Environment configuration file.
+- `.gitignore`: Gitignore rules for excluding specific files and directories from version control.
+- `docker-compose.yml`: Configuration file for Docker Compose.
+- `docker`: Directory containing Docker-related files.
+    - `python_app`: Directory for the Python application Docker container.
+        - `Dockerfile`: Dockerfile for building the Python application container.
+        - `entrypoint.sh`: Shell script to be executed when the container starts.
+        - `requirements.txt`: List of Python package dependencies.
+    - `python_publisher`: Directory for the Python publisher Docker container.
+        - `Dockerfile`: Dockerfile for building the Python publisher container.
+        - `requirements.txt`: List of Python package dependencies.
+    - `python_subscriber`: Directory for the Python subscriber Docker container.
+        - `Dockerfile`: Dockerfile for building the Python subscriber container.
+        - `requirements.txt`: List of Python package dependencies.
+- `mosquitto`: Directory for Mosquitto MQTT broker configuration.
+    - `config`: Configuration directory for Mosquitto.
+        - `mosquitto.conf`: Configuration file for the Mosquitto MQTT broker.
+- `python_app`: Directory for Python application source code.
+    - `app.py`: Main Python application file.
+- `python_publisher`: Directory for Python publisher source code.
+    - `mqtt_publisher.py`: Python script for MQTT message publishing.
+- `python_subscriber`: Directory for Python subscriber source code.
+    - `db_save.py`: Python script for saving data received via MQTT.
+    - `mqtt_subscriber.py`: Python script for MQTT message subscription.
+
+    
 # Services Overview
 
-.env file contains all credentials and it is used as 
 
 ### `python_publisher`
 
@@ -120,13 +185,15 @@ GET /fetch_sensor_readings/
 - **Networks:** It is part of the `iot-network`.
 - **Healthcheck:** It has a health check configured.
 
+- <img src="diagram/mongodb.png" alt="Diagram">
 
-## Endpoint Reference 
-Endpoint coming from fast api. The Fast API running on __8222__ port.
-
-### Redis data
-<img src="diagram/redis_data.png" alt="Diagram">
-
+### Tools used to verify data in different stages 
+The following tools are utilized for verifying the presence of data in the database and for testing API endpoints.
+```
+- Postman
+- RedisInsight
+- Mongodb Compass
+```
 ## Design-Choices
 
 ## Challenges-and-Solutions
