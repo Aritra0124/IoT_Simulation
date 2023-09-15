@@ -2,15 +2,17 @@ from datetime import datetime
 import paho.mqtt.client as mqtt_client
 import json, time, os, random
 
+# This class used to access env variables.
 class envData:
     MOSQUITTO_BROKER_IP = os.getenv('MOSQUITTO_BROKER_IP')
     MOSQUITTO_BROKER_PORT = int(os.getenv('MOSQUITTO_BROKER_PORT'))
     MOSQUITTO_BROKER_TOPIC = os.getenv('MOSQUITTO_BROKER_TOPIC')
 
 
+# This function generates random data for publisher. It generates random sensor id from 1 to 10 and random sensor value from 1 to 999
 def random_data():
     sensor_id = random.randint(1, 10)
-    data = random.randint(1000, 9999)
+    data = random.randint(1, 999)
     current_datetime = datetime.now()
     data = {
         "sensor_id": sensor_id,

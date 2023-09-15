@@ -19,7 +19,8 @@
 - [Challenges and Solutions](#challenges-and-solutions)
 
 # Project-Overview
-This project aims to simulate the behavior of sensors, monitor their readings, and provide APIs to retrieve data based on specific criteria. It offers a comprehensive solution for sensor data management and access. Whether you are working with real sensors or need to simulate their behavior for testing and development purposes, this project provides the tools and APIs to efficiently handle sensor data.
+This project aims to simulate the behavior of sensors, monitor their readings, and provide APIs to 
+retrieve data based on specific criteria.
 
 ## Key Objectives
 
@@ -35,7 +36,7 @@ This project aims to simulate the behavior of sensors, monitor their readings, a
     }
     ```
 
-- **MQTT Subscriber:** Construct a Python MQTT subscriber to receive sensor data messages and store them in a MongoDB collection.
+- **MQTT Subscriber:** Create a Python MQTT subscriber to receive sensor data messages and store them in a MongoDB collection.
 
 - **Data Storage:** Initiate a MongoDB instance using Docker to serve as the primary data storage solution for the incoming MQTT messages.
 
@@ -52,7 +53,8 @@ This project aims to simulate the behavior of sensors, monitor their readings, a
 # Getting-Started
 To begin using this project, follow the steps below to configure the sensor simulation and monitoring environment.
 ## Prerequisites
-To ensure proper functionality, it is required to use Docker Compose version 2.0 or a more recent version.
+1. To ensure proper functionality, it is required to use Docker Compose version 2.0 or a more recent version.
+2. Add all required credentials in ```.env``` file.
 ## File Structure
 ```
 .env
@@ -151,9 +153,9 @@ python_subscriber
 ```http
 GET /sensor/{sensor_id}
 ```
-| Parameter | Type     | Description |
-| :-------- |:---------|:------------|
-| `sensor_id` | `integer` |          |
+| Parameter   | Type      | Description                      |
+|:------------|:----------|:---------------------------------|
+| `sensor_id` | `integer` | **Required**. It takes sensor id |
 
 <img src="diagram/api_response_1.png" alt="Diagram">
 
@@ -162,7 +164,7 @@ GET /sensor/{sensor_id}
 GET /fetch_sensor_readings/
 ```
 | Parameter | Type     | Description                   |
-|:----------| :------- |:------------------------------|
+|:----------|:---------|:------------------------------|
 | `start`   | `string` | **Required**. Pass it in body |
 | `end`     | `string` | **Required**. pass it in body |
 
@@ -195,5 +197,24 @@ The following tools are utilized for verifying the presence of data in the datab
 - Mongodb Compass
 ```
 ## Design-Choices
+### Framework and Library Selection
+```
+1. pymongo
+2. fastapi
+3. paho
+4. redis
+```
 
 ## Challenges-and-Solutions
+1. During developing the project I faced issues related to storing data into redis and mongodb from MQTT subscriber end.
+I was unable to store only latest 10 incoming data into redis and oldest data into mongodb. After doing few searching about
+redis (python library) found out in the documentation that we can use ```rpush``` for storing data at end of the queue and
+```lpop``` for removing data from head of the queue. 
+2. During creating api endpoint for  ```/fetch_sensor_readings/```, this endpoint takes ```start``` and ```end``` datetime 
+in body to fetch data. Initially I was facing issue because for datatype. 
+```
+class BodyData(BaseModel):
+    start: str
+    end: str
+```
+The solution I came up using BodyData class. Now we can pass datatime as string and can retrieve data from mongodb.
