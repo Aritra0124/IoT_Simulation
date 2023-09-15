@@ -92,7 +92,7 @@ python_subscriber
 - `docker`: Directory containing Docker-related files.
     - `python_app`: Directory for the Python application Docker container.
         - `Dockerfile`: Dockerfile for building the Python application container.
-        - `entrypoint.sh`: Shell script to be executed when the container starts.
+        - `entrypoint.sh`: Shell script to be executed when the container starts. It starts the FastAPI server.
         - `requirements.txt`: List of Python package dependencies.
     - `python_publisher`: Directory for the Python publisher Docker container.
         - `Dockerfile`: Dockerfile for building the Python publisher container.
@@ -138,7 +138,7 @@ python_subscriber
 - **Description:** This service runs the MQTT broker using the Eclipse Mosquitto image version 1.6.10.
 - **Volume:** It mounts the configuration directory from `./mosquitto/config` to `/mosquitto/config` inside the container.
 - **Ports:** It exposes MQTT broker on host port 8888, mapped to container port 1883.
-- **Networks:** It is part of the `iot-network` with a specific IPv4 address.
+- **Networks:** It is part of the `iot-network` with a specific IPv4 address. Assigned static IP to simulate it as 
 
 ### `python_app`
 
@@ -149,6 +149,7 @@ python_subscriber
 - **Command:** It runs the `/entrypoint.sh` script.
 - **Ports:** It exposes the Fast API application on host port 8222, mapped to container port 8200.
 - **Dependencies:** This service depends on `mongo_db`.
+
 ####  Endpoint to retrieve the last ten sensor readings for a specific sensor
 ```http
 GET /sensor/{sensor_id}
@@ -175,7 +176,7 @@ GET /fetch_sensor_readings/
 - **Description:** This service runs a Redis server using the "redis:alpine" image.
 - **Ports:** It exposes the Redis server on host port 6000, mapped to container port 6379.
 
-- <img src="diagram/redis_data.png" alt="Diagram">
+<img src="diagram/redis_data.png" alt="Diagram">
 
 
 ### `mongo_db`
@@ -187,18 +188,18 @@ GET /fetch_sensor_readings/
 - **Networks:** It is part of the `iot-network`.
 - **Healthcheck:** It has a health check configured.
 
-- <img src="diagram/mongodb.png" alt="Diagram">
+<img src="diagram/mongodb.png" alt="Diagram">
 
 ### Tools used to verify data in different stages 
 The following tools are utilized for verifying the presence of data in the database and for testing API endpoints.
-```
+``` list
 - Postman
 - RedisInsight
 - Mongodb Compass
 ```
 ## Design-Choices
 ### Framework and Library Selection
-```
+``` list
 1. pymongo
 2. fastapi
 3. paho
@@ -210,9 +211,10 @@ The following tools are utilized for verifying the presence of data in the datab
 I was unable to store only latest 10 incoming data into redis and oldest data into mongodb. After doing few searching about
 redis (python library) found out in the documentation that we can use ```rpush``` for storing data at end of the queue and
 ```lpop``` for removing data from head of the queue. 
+
 2. During creating api endpoint for  ```/fetch_sensor_readings/```, this endpoint takes ```start``` and ```end``` datetime 
 in body to fetch data. Initially I was facing issue because for datatype. 
-```
+``` python
 class BodyData(BaseModel):
     start: str
     end: str
